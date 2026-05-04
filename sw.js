@@ -1,4 +1,4 @@
-const CACHE_NAME = "autologist-v25";
+const CACHE_NAME = "autologist-v26";
 const ASSETS = [
   "./",
   "./index.html",
