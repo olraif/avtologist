@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Автологист</title>
+    <meta name="theme-color" content="#182326" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css?v=7" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Навигация">
+        <div class="brand">
+          <div class="brand-mark">ПГ</div>
+          <div>
+            <strong>Автологист</strong>
+            <span>мобильный логист перевозчика · v25</span>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <a class="nav-item active" href="#tripScreen" data-screen="trip" title="Рейс">
+            <span aria-hidden="true">▦</span>
+            <span>Рейс</span>
+          </a>
+          <a class="nav-item" href="#loadsScreen" data-screen="loads" title="Грузы">
+            <span aria-hidden="true">≡</span>
+            <span>Грузы</span>
+          </a>
+          <a class="nav-item" href="#sourcesScreen" data-screen="sources" title="Источники">
+            <span aria-hidden="true">＋</span>
+            <span>Источники</span>
+          </a>
+          <a class="nav-item" href="#helpScreen" data-screen="help" title="Помощь">
+            <span aria-hidden="true">?</span>
+            <span>Помощь</span>
+          </a>
+          <a class="nav-item" href="#responsesScreen" data-screen="responses" title="Отклики">
+            <span aria-hidden="true">✓</span>
+            <span>Отклики</span>
+          </a>
+        </nav>
+
+        <section class="summary-panel" aria-label="Сводка">
+          <span>Проверено системой</span>
+          <strong id="totalLoads">0</strong>
+          <p>заявок с расчетом маржи и рисков</p>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Автологист для перевозчика</p>
+            <h1>Загружает машину без простоя и слабых ставок</h1>
+          </div>
+          <button class="primary-action" type="button" id="addDemoLoad">
+            <span aria-hidden="true">＋</span>
+            Добавить груз
+          </button>
+        </header>
+
+        <div class="debug-panel" id="debugPanel" hidden>
+          <strong>Диагностика</strong>
+          <span id="debugText">Проверка запуска приложения</span>
+        </div>
+
+        <section class="app-screen active-screen" id="tripScreen" data-screen-panel="trip">
+        <section class="profile-panel" aria-label="Параметры машины">
+          <label>
+            <span>Кузов</span>
+            <select id="bodyInput">
+              <option value="">Любой</option>
+              <option value="тент">Тент</option>
+              <option value="фургон">Фургон</option>
+              <option value="рефрижератор">Рефрижератор</option>
+              <option value="борт">Борт</option>
+            </select>
+          </label>
+          <label>
+            <span>Погрузка</span>
+            <select id="loadingInput">
+              <option value="">Любая</option>
+              <option value="задняя">Задняя</option>
+              <option value="боковая">Боковая</option>
+              <option value="верхняя">Верхняя</option>
+              <option value="полная растентовка">Полная растентовка</option>
+              <option value="гидроборт">Гидроборт</option>
+              <option value="кран">Кран / манипулятор</option>
+              <option value="аппарели">Аппарели</option>
+              <option value="паллеты">Паллетная</option>
+              <option value="температура">Температурная</option>
+              <option value="контейнер">Контейнерная</option>
+              <option value="насыпь">Насыпная</option>
+              <option value="налив">Наливная</option>
+              <option value="негабарит">Негабарит</option>
+            </select>
+          </label>
+          <label>
+            <span>Свободно, т</span>
+            <input id="capacityInput" type="number" min="1" max="25" step="1" value="20" />
+          </label>
+          <label>
+            <span>Расход, ₽/км</span>
+            <input id="costInput" type="number" min="20" max="120" step="5" value="55" />
+          </label>
+          <label>
+            <span>Мин. маржа, ₽</span>
+            <input id="marginInput" type="number" min="0" step="5000" value="25000" />
+          </label>
+          <label>
+            <span>Цель загрузки, %</span>
+            <input id="fillTargetInput" type="number" min="50" max="100" step="5" value="90" />
+          </label>
+          <label>
+            <span>Макс. погрузок</span>
+            <input id="maxStopsInput" type="number" min="1" max="4" step="1" value="2" />
+          </label>
+          <label>
+            <span>Простой, ₽/ч</span>
+            <input id="idleCostInput" type="number" min="500" max="10000" step="500" value="2500" />
+          </label>
+          <div class="profile-actions">
+            <button class="secondary-action" type="button" id="saveProfile">Сохранить машину</button>
+            <span id="profileStatus">Профиль машины пока не сохранен</span>
+          </div>
+        </section>
+
+        <section class="search-panel" aria-label="Маршрут машины">
+          <label>
+            <span>Машина сейчас</span>
+            <input id="fromInput" type="search" placeholder="Москва" autocomplete="off" />
+          </label>
+          <label>
+            <span>Нужно в сторону</span>
+            <input id="toInput" type="search" placeholder="Казань" autocomplete="off" />
+          </label>
+          <label>
+            <span>Дата</span>
+            <input id="dateInput" type="date" />
+          </label>
+          <label>
+            <span>Макс. вес, т</span>
+            <input id="weightInput" type="number" min="1" max="25" step="1" placeholder="20" />
+          </label>
+          <button class="search-button" type="button" id="clearFilters">Сброс</button>
+        </section>
+
+        <section class="autopilot-panel" id="autopilotPanel" aria-label="Автологист">
+          <div class="autopilot-head">
+            <div>
+              <p class="eyebrow">Режим автологиста</p>
+              <h2 id="autopilotStatus">Готов подобрать рейс</h2>
+            </div>
+            <div class="autopilot-actions">
+              <button class="secondary-action" type="button" id="runAutopilot">Запустить подбор</button>
+              <button class="primary-action compact" type="button" id="acceptBest">Принять лучший рейс</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span>Загрузка</span>
+              <strong id="fillRate">—</strong>
+            </div>
+            <div class="kpi-card">
+              <span>Чистая прибыль</span>
+              <strong id="bestProfit">—</strong>
+            </div>
+            <div class="kpi-card">
+              <span>Погрузок</span>
+              <strong id="stopCount">—</strong>
+            </div>
+            <div class="kpi-card">
+              <span>Ставка/км</span>
+              <strong id="ratePerKm">—</strong>
+            </div>
+          </div>
+
+          <div class="bundle-card">
+            <div>
+              <span>План полной загрузки</span>
+              <strong id="bundleTitle">—</strong>
+            </div>
+            <p id="bundlePlan">Автологист соберет грузы так, чтобы машина была загружена, погрузок было меньше, а ставка не просела.</p>
+          </div>
+
+          <div class="pro-grid">
+            <div class="pro-card">
+              <span>Минимум для торга</span>
+              <strong id="minNegotiationRate">—</strong>
+            </div>
+            <div class="pro-card">
+              <span>Запас по ставке</span>
+              <strong id="rateReserve">—</strong>
+            </div>
+            <div class="pro-card">
+              <span>Риск рейса</span>
+              <strong id="tripRisk">—</strong>
+            </div>
+            <div class="pro-card">
+              <span>Следующий контроль</span>
+              <strong id="nextControl">—</strong>
+            </div>
+          </div>
+
+          <div class="ops-grid">
+            <section class="ops-block">
+              <div class="ops-title">
+                <span>01</span>
+                <h3>План рейса</h3>
+              </div>
+              <ol class="task-list" id="planSteps"></ol>
+            </section>
+            <section class="ops-block">
+              <div class="ops-title">
+                <span>02</span>
+                <h3>Документы</h3>
+              </div>
+              <ul class="check-list" id="documentChecklist"></ul>
+            </section>
+            <section class="ops-block wide">
+              <div class="ops-title">
+                <span>03</span>
+                <h3>Переговоры и контроль</h3>
+              </div>
+              <p class="script-box" id="negotiationScript">После подбора здесь появится готовый сценарий.</p>
+              <div class="timeline" id="timelineList"></div>
+            </section>
+          </div>
+        </section>
+
+        </section>
+
+        <section class="app-screen" id="sourcesScreen" data-screen-panel="sources">
+        <section class="sources-panel" aria-label="Источники грузов">
+          <div class="section-head compact-head">
+            <div>
+              <p class="eyebrow">Радар грузов по РФ</p>
+              <h2>Перевозчик подключает свои источники</h2>
+            </div>
+            <strong id="coverageScore">—</strong>
+          </div>
+
+          <div class="connector-form">
+            <label>
+              <span>Тип источника</span>
+              <select id="sourceTypeInput">
+                <option value="Биржа/API">Биржа/API</option>
+                <option value="Таблица">Excel / Google Sheets</option>
+                <option value="Мессенджер">Telegram / WhatsApp</option>
+                <option value="Прямой заказчик">Прямой заказчик</option>
+                <option value="Ручной импорт">Ручной импорт</option>
+              </select>
+            </label>
+            <label>
+              <span>Биржа</span>
+              <select id="exchangeInput">
+                <option value="ATI.SU">ATI.SU / АвтоТрансИнфо</option>
+                <option value="Cargomart">Cargomart</option>
+                <option value="Traffic">Traffic</option>
+                <option value="Roolz">Roolz</option>
+                <option value="Trans.eu">Trans.eu</option>
+                <option value="Lardi-Trans">Lardi-Trans</option>
+                <option value="Transinfo">Transinfo</option>
+                <option value="TRANSLOT">TRANSLOT</option>
+                <option value="EktoTrans">EktoTrans</option>
+                <option value="Gruzobzor">Gruzobzor</option>
+                <option value="Perevozka24">Perevozka24</option>
+                <option value="Авито Услуги">Авито Услуги</option>
+                <option value="Монополия / Monopoly.Online">Монополия / Monopoly.Online</option>
+                <option value="Яндекс Магистрали">Яндекс Магистрали</option>
+                <option value="своя биржа">Своя биржа / закрытый кабинет</option>
+              </select>
+            </label>
+            <label>
+              <span>Название</span>
+              <input id="sourceNameInput" type="text" placeholder="Например: мои заявки Москва" />
+            </label>
+            <button class="primary-action compact" type="button" id="addSource">Подключить</button>
+          </div>
+
+          <div class="source-grid">
+            <div class="source-card active-source">
+              <span>Биржи и API</span>
+              <strong>подключить</strong>
+              <p>Партнерские доступы, выгрузки, разрешенные API.</p>
+            </div>
+            <div class="source-card">
+              <span>Прямые заказчики</span>
+              <strong>важно</strong>
+              <p>Заявки от производителей, складов, экспедиторов.</p>
+            </div>
+            <div class="source-card">
+              <span>Публичные заявки</span>
+              <strong>осторожно</strong>
+              <p>Только если правила источника разрешают сбор.</p>
+            </div>
+          </div>
+
+          <div class="source-directory">
+            <div class="directory-head">
+              <div>
+                <p class="eyebrow">Открытые и подключаемые источники</p>
+                <h3>С чего брать заявки</h3>
+              </div>
+              <span>план подключения</span>
+            </div>
+            <div class="directory-list">
+              <article class="directory-item">
+                <strong>ATI.SU</strong>
+                <span>API / кабинет</span>
+                <p>Нужен доступ перевозчика и разрешение на работу с заявками. Подходит для автоматического поиска по маршрутам.</p>
+              </article>
+              <article class="directory-item">
+                <strong>Lardi-Trans</strong>
+                <span>Public API</span>
+                <p>Подходит как официальный API-источник. Нужно подключение аккаунта и ключи доступа.</p>
+              </article>
+              <article class="directory-item">
+                <strong>Cargomart, Trans.eu, Roolz</strong>
+                <span>кабинет / партнерство</span>
+                <p>Можно подключать через разрешенные выгрузки, личный кабинет или партнерскую интеграцию.</p>
+              </article>
+              <article class="directory-item">
+                <strong>Google Sheets / Excel / CSV</strong>
+                <span>самый быстрый старт</span>
+                <p>Логист или заказчик ведет таблицу, перевозчик загружает ее в автологиста без сложной интеграции.</p>
+              </article>
+              <article class="directory-item">
+                <strong>Telegram и почта</strong>
+                <span>полуавтоматический импорт</span>
+                <p>Заявки из каналов и писем превращаются в карточки грузов после подтверждения перевозчиком.</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="connection-roadmap">
+            <div class="roadmap-step">
+              <span>1</span>
+              <p><strong>Сначала таблица</strong> — быстро проверить подбор на своих заявках.</p>
+            </div>
+            <div class="roadmap-step">
+              <span>2</span>
+              <p><strong>Потом Telegram/почта</strong> — собрать поток от менеджеров и клиентов.</p>
+            </div>
+            <div class="roadmap-step">
+              <span>3</span>
+              <p><strong>Затем API бирж</strong> — автоматический радар грузов по маршрутам.</p>
+            </div>
+          </div>
+
+          <div class="connected-head">
+            <span>Мои источники</span>
+            <strong id="connectedCount">0</strong>
+          </div>
+          <div class="connected-list" id="connectedSources"></div>
+          <div class="region-strip" id="regionStrip"></div>
+        </section>
+
+        </section>
+
+        <section class="add-load-panel" id="addLoadPanel" aria-label="Добавить груз">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Ручная заявка</p>
+              <h2>Добавить груз</h2>
+            </div>
+          </div>
+
+          <div class="manual-load-form">
+            <label>
+              <span>Откуда</span>
+              <input id="manualFromInput" type="text" placeholder="Москва" />
+            </label>
+            <label>
+              <span>Куда</span>
+              <input id="manualToInput" type="text" placeholder="Казань" />
+            </label>
+            <label>
+              <span>Груз</span>
+              <input id="manualTitleInput" type="text" placeholder="Паллеты, продукты, оборудование" />
+            </label>
+            <label>
+              <span>Вес, т</span>
+              <input id="manualWeightInput" type="number" min="1" max="25" value="10" />
+            </label>
+            <label>
+              <span>Объем, м3</span>
+              <input id="manualVolumeInput" type="number" min="1" max="120" value="40" />
+            </label>
+            <label>
+              <span>Кузов</span>
+              <input id="manualBodyInput" type="text" placeholder="тент" />
+            </label>
+            <label>
+              <span>Погрузка</span>
+              <input id="manualLoadingInput" type="text" placeholder="задняя / боковая" />
+            </label>
+            <label>
+              <span>Ставка, ₽</span>
+              <input id="manualRateInput" type="number" min="1000" step="1000" value="75000" />
+            </label>
+          <label>
+            <span>Заказчик</span>
+            <input id="manualCompanyInput" type="text" placeholder="Прямой заказчик" />
+          </label>
+          <label>
+            <span>Телефон</span>
+            <input id="manualPhoneInput" type="tel" placeholder="+7 900 000-00-00" />
+          </label>
+          <label>
+            <span>Адрес погрузки</span>
+            <input id="manualPickupInput" type="text" placeholder="Склад, улица, ворота" />
+          </label>
+          <label>
+            <span>Адрес выгрузки</span>
+            <input id="manualDropoffInput" type="text" placeholder="Получатель, адрес" />
+          </label>
+          <label>
+            <span>Комментарий</span>
+            <input id="manualCommentInput" type="text" placeholder="Оплата, документы, требования" />
+          </label>
+          <button class="primary-action" type="button" id="saveManualLoad">Сохранить груз</button>
+          </div>
+
+          <div class="import-panel" aria-label="Импорт из таблицы">
+            <div class="section-head compact-import-head">
+              <div>
+                <p class="eyebrow">Импорт из таблицы</p>
+                <h3>Вставить заявки из Excel / Google Sheets / CSV</h3>
+              </div>
+            </div>
+            <p class="import-hint">Формат строки: откуда; куда; груз; вес; объем; кузов; погрузка; ставка; заказчик; телефон. Можно вставлять строки через точку с запятой, запятую или табуляцию.</p>
+            <textarea id="csvInput" rows="7" placeholder="Москва; Казань; Паллеты; 10; 40; тент; задняя; 82000; ТК Восток; +7 900 100-10-10"></textarea>
+            <div class="import-actions">
+              <button class="secondary-action" type="button" id="pasteExample">Вставить пример</button>
+              <button class="primary-action" type="button" id="importCsvLoads">Импортировать грузы</button>
+            </div>
+            <span class="import-status" id="importStatus">Пока таблица не импортирована</span>
+          </div>
+
+          <div class="import-panel" aria-label="Импорт из сообщения">
+            <div class="section-head compact-import-head">
+              <div>
+                <p class="eyebrow">Telegram / почта</p>
+                <h3>Разобрать текст заявки</h3>
+              </div>
+            </div>
+            <p class="import-hint">Вставьте сообщение от заказчика или из канала. Автологист попробует найти маршрут, груз, вес, ставку, телефон и создать заявку.</p>
+            <textarea id="messageInput" rows="7" placeholder="Москва - Казань. Груз: паллеты с бытовой техникой, 8 т, тент, задняя погрузка. Ставка 82000 руб. Телефон +7 900 100-10-10"></textarea>
+            <div class="import-actions">
+              <button class="secondary-action" type="button" id="pasteMessageExample">Вставить пример</button>
+              <button class="primary-action" type="button" id="parseMessageLoad">Создать груз из текста</button>
+            </div>
+            <span class="import-status" id="messageImportStatus">Пока сообщение не разобрано</span>
+          </div>
+        </section>
+
+        <section class="app-screen" id="loadsScreen" data-screen-panel="loads">
+        <section class="content-grid">
+          <section class="loads-section" aria-label="Список грузов">
+            <div class="section-head">
+              <div>
+                <h2 id="viewTitle">Рекомендации автологиста</h2>
+                <p id="resultMeta">Система оценит деньги, крюк, кузов и риск</p>
+              </div>
+              <div class="sort-wrap">
+                <label for="sortSelect">Сортировка</label>
+                <select id="sortSelect">
+                  <option value="score">Лучшее решение</option>
+                  <option value="profit">Больше маржа</option>
+                  <option value="date">Ближайшая дата</option>
+                  <option value="distance">Меньше крюк</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="loads-list" id="loadsList"></div>
+          </section>
+
+          <aside class="route-panel" aria-label="Маршрут и детали">
+            <div class="route-map">
+              <div class="route-line"></div>
+              <div class="route-point start">
+                <span></span>
+                <strong id="routeFrom">Откуда</strong>
+              </div>
+              <div class="route-point finish">
+                <span></span>
+                <strong id="routeTo">Куда</strong>
+              </div>
+            </div>
+
+            <div class="detail-box">
+              <span>Ожидаемая маржа</span>
+              <strong id="avgRate">—</strong>
+            </div>
+            <div class="detail-box">
+              <span>Лучшее решение</span>
+              <strong id="bestDetour">—</strong>
+            </div>
+            <div class="detail-box">
+              <span>Оценка простоя</span>
+              <strong id="idleHours">—</strong>
+            </div>
+            <div class="detail-box accent">
+              <span>Действие</span>
+              <strong id="focusText">Введите маршрут</strong>
+            </div>
+
+            <div class="assistant-box">
+              <span>Сообщение заказчику</span>
+              <p id="replyText">Выберите маршрут, и система подготовит короткий отклик.</p>
+            </div>
+
+            <div class="assistant-box">
+              <span>Что делает автологист</span>
+              <p id="agentText">Считает экономику, отсеивает рискованные грузы, готовит отклик и планирует контрольные точки.</p>
+            </div>
+          </aside>
+        </section>
+        </section>
+
+        <section class="app-screen" id="responsesScreen" data-screen-panel="responses">
+          <section class="loads-section" aria-label="Отклики">
+            <div class="section-head">
+              <div>
+                <h2>Отклики в работе</h2>
+                <p id="responsesMeta">Здесь отображаются грузы, по которым отправлен отклик</p>
+              </div>
+            </div>
+            <div class="loads-list" id="responsesList"></div>
+          </section>
+        </section>
+
+        <section class="app-screen" id="helpScreen" data-screen-panel="help">
+          <section class="help-panel" aria-label="Инструкция">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Как пользоваться</p>
+                <h2>Быстрый запуск автологиста</h2>
+              </div>
+            </div>
+
+            <ol class="help-steps">
+              <li>
+                <strong>Что значит “Добавить груз”</strong>
+                <span>Это ручная форма для заявки, которую перевозчик получил от клиента, из таблицы, чата или по телефону. После сохранения груз попадает в общий список и участвует в подборе.</span>
+              </li>
+              <li>
+                <strong>Как импортировать таблицу</strong>
+                <span>Скопируйте строки из Excel или Google Sheets, откройте блок “Импорт из таблицы”, вставьте данные и нажмите “Импортировать грузы”. Каждая строка станет отдельной заявкой.</span>
+              </li>
+              <li>
+                <strong>Как добавить заявку из Telegram или почты</strong>
+                <span>Скопируйте текст сообщения, вставьте его в блок “Разобрать текст заявки” и нажмите “Создать груз из текста”. Перед откликом проверьте ставку, телефон и адреса.</span>
+              </li>
+              <li>
+                <strong>Укажите машину</strong>
+                <span>Выберите кузов, способ погрузки, свободный вес, расход, минимальную маржу, цель загрузки и допустимое число погрузок. Нажмите “Сохранить машину”, чтобы не вводить данные заново.</span>
+              </li>
+              <li>
+                <strong>Введите маршрут</strong>
+                <span>Заполните “Машина сейчас” и “Нужно в сторону”. Если маршрут не важен, оставьте поля пустыми.</span>
+              </li>
+              <li>
+                <strong>Нажмите “Запустить подбор”</strong>
+                <span>Автологист рассчитает загрузку, чистую прибыль, ставку за км, простой и предложит лучший план рейса.</span>
+              </li>
+              <li>
+                <strong>Проверьте грузы</strong>
+                <span>Откройте экран “Грузы”, посмотрите маржу, риск, тип кузова, погрузку и объяснение решения.</span>
+              </li>
+              <li>
+                <strong>Подключите источники</strong>
+                <span>На экране “Источники” добавьте биржи, таблицы, мессенджеры или прямых заказчиков. Чем больше источников, тем выше покрытие.</span>
+              </li>
+              <li>
+                <strong>Примите рейс</strong>
+                <span>Нажмите “Принять лучший рейс”. Груз попадет в “Отклики”, а приложение покажет план действий, документы и текст переговоров.</span>
+              </li>
+            </ol>
+
+            <div class="help-card">
+              <strong>Что означает решение</strong>
+              <p><b>Брать</b> — ставка и риск подходят. <b>Торговаться</b> — груз интересный, но нужно поднять ставку. <b>Пропустить</b> — маржа, риск или простой хуже заданных условий.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Что показывать перевозчику</strong>
+              <p>Главная ценность: полная загрузка, меньше погрузок, ставка за км, отсутствие простоя и готовый сценарий переговоров вместо ручной работы логиста.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Как думает профессиональный логист</strong>
+              <p>Он не берет груз только по высокой ставке. Сначала проверяет запас по ставке, надежность заказчика, время погрузки, документы, оплату, крюк, простой и следующий контрольный звонок. Поэтому в рейсе появились минимум для торга, риск и список проверок.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Как подключить источник</strong>
+              <p>Откройте “Источники”, выберите тип: биржа/API, таблица, мессенджер, прямой заказчик или ручной импорт. Если выбран тип “Биржа/API”, выберите биржу из списка. В поле “Название” можно написать понятное имя, например “ATI Москва-Казань” или “Канал заявок ИП Иванов”. Затем нажмите “Подключить”.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Какие источники брать первыми</strong>
+              <p>Начните с Excel, Google Sheets или CSV: это быстрее всего проверить на реальных заявках перевозчика. Следом подключайте Telegram, почту и прямых заказчиков. Биржи через API подключаются после этого, потому что для них нужны ключи, договоренности и серверная часть.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Формат таблицы</strong>
+              <p>Одна строка — один груз. Порядок колонок: откуда; куда; груз; вес; объем; кузов; погрузка; ставка; заказчик; телефон. Если часть колонок пустая, автологист подставит безопасные значения по умолчанию.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Формат сообщения</strong>
+              <p>Лучше всего работает текст, где есть маршрут, груз, вес, ставка и контакт. Пример: Москва - Казань, груз паллеты, 10 т, тент, ставка 82000 руб, телефон +7 900 000-00-00.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Как проверить, что все работает</strong>
+              <p>1. Сохраните машину. 2. Нажмите “Запустить подбор”. 3. Откройте “Грузы” и проверьте карточки. 4. Добавьте груз вручную. 5. Подключите источник. 6. Нажмите “Принять лучший рейс” и проверьте “Отклики”.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Что будет в реальном подключении</strong>
+              <p>Для биржи потребуется API-ключ или партнерский доступ. Для таблицы — ссылка на файл. Для Telegram/WhatsApp — подключение канала или пересылка заявок. Для прямого заказчика — личный кабинет или форма, куда клиент отправляет грузы.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Важно про доступы</strong>
+              <p>Пароли и API-ключи нельзя вводить в демо. В настоящей версии они должны храниться на сервере в защищенном виде, а перевозчик должен сам подтверждать подключение каждого источника.</p>
+            </div>
+
+            <div class="help-card">
+              <strong>Как запустить сервер</strong>
+              <p>Для MVP достаточно Supabase: он даст базу, пользователей и таблицы для машин, грузов, источников и откликов. В проекте подготовлены файлы SUPABASE_START.md и supabase_schema.sql. Сначала создайте проект Supabase, затем выполните SQL-схему в SQL Editor.</p>
+            </div>
+
+            <div class="help-card server-card">
+              <strong>Подключение Supabase</strong>
+              <p id="serverDetails">Проект Supabase добавлен. Нажмите проверку, чтобы убедиться, что сайт видит сервер.</p>
+              <button class="secondary-action" type="button" id="testServer">Проверить сервер</button>
+              <span class="server-status" id="serverStatus">Ожидает проверки</span>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <template id="loadCardTemplate">
+      <article class="load-card">
+        <div class="card-top">
+          <div>
+            <span class="decision"></span>
+            <p class="route"></p>
+            <h3></h3>
+          </div>
+          <button class="icon-button save-button" type="button" title="В избранное" aria-label="В избранное">☆</button>
+        </div>
+        <div class="chips"></div>
+        <div class="metrics"></div>
+        <div class="reason-list"></div>
+        <div class="card-footer">
+          <div>
+            <span class="company"></span>
+            <small class="updated"></small>
+          </div>
+          <button class="respond-button" type="button">Откликнуться</button>
+        </div>
+      </article>
+    </template>
+
+    <script>
+      (function () {
+        var debugPanel = document.getElementById("debugPanel");
+        var debugText = document.getElementById("debugText");
+
+        window.addEventListener("error", function (event) {
+          if (!debugPanel || !debugText) return;
+          debugPanel.hidden = false;
+          debugText.textContent = "Ошибка JS: " + (event.message || "неизвестная ошибка");
+        });
+
+        function text(id, value) {
+          var element = document.getElementById(id);
+          if (element) element.textContent = value;
+        }
+
+        function runFallback() {
+          var rate = 82000;
+          var distance = 838;
+          var costPerKm = Number((document.getElementById("costInput") || {}).value) || 55;
+          var idleCost = Number((document.getElementById("idleCostInput") || {}).value) || 2500;
+          var margin = rate - distance * costPerKm - idleCost * 2;
+
+          text("autopilotStatus", "Подбор выполнен");
+          text("fillRate", "80%");
+          text("bestProfit", margin.toLocaleString("ru-RU") + " ₽");
+          text("stopCount", "1");
+          text("ratePerKm", Math.round(rate / distance) + " ₽/км");
+          text("bundleTitle", "Казань");
+          text("bundlePlan", "Запасной расчет: 80% загрузки, 1 погрузка, ставка без простоя, чистыми " + margin.toLocaleString("ru-RU") + " ₽.");
+          text("avgRate", margin.toLocaleString("ru-RU") + " ₽");
+          text("bestDetour", "68/100");
+          text("idleHours", "2 ч");
+          text("focusText", "Брать");
+
+          var panel = document.getElementById("autopilotPanel");
+          if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        window.__autologistFallback = runFallback;
+
+        var button = document.getElementById("runAutopilot");
+        if (button) {
+          button.onclick = runFallback;
+          button.ontouchend = function (event) {
+            event.preventDefault();
+            runFallback();
+          };
+        }
+      })();
+    </script>
+    <script src="supabase_config.js?v=25"></script>
+    <script src="supabase_client.js?v=25"></script>
+    <script src="legacy.js?v=25"></script>
+  </body>
+</html>
